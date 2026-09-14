@@ -1,7 +1,10 @@
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from config import DEFAULT_TIMEOUT
+
+STALE_RETRY_ATTEMPTS = 3
 
 
 class BasePage:
@@ -23,7 +26,16 @@ class BasePage:
         return self.driver.find_elements(*locator)
 
     def click(self, locator):
-        self.wait.until(EC.element_to_be_clickable(locator)).click()
+        """Retries on StaleElementReferenceException: the element can be
+        located and judged clickable, then get swapped out by a React
+        re-render a moment before .click() actually runs."""
+        for attempt in range(STALE_RETRY_ATTEMPTS):
+            try:
+                self.wait.until(EC.element_to_be_clickable(locator)).click()
+                return
+            except StaleElementReferenceException:
+                if attempt == STALE_RETRY_ATTEMPTS - 1:
+                    raise
 
     def type(self, locator, text):
         el = self.find(locator)
