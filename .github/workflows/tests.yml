@@ -24,7 +24,11 @@ jobs:
       - name: Run tests
         env:
           HEADLESS: "1"
-        run: pytest
+        # --reruns: saucedemo.com is a shared public demo site and GitHub-hosted
+        # runners occasionally hit real network flakiness reaching it
+        # (ERR_INTERNET_DISCONNECTED, slow navigations). Retrying here in CI
+        # only -- not in pytest.ini -- so a real local failure still fails fast.
+        run: pytest --reruns 2 --reruns-delay 5
 
       - name: Upload HTML report
         if: always()
