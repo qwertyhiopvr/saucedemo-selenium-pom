@@ -7,3 +7,4 @@ reports/
 .idea/
 .vscode/
 .DS_Store
+pytest-html-report.zip
