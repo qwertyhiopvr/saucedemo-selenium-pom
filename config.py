@@ -11,4 +11,4 @@ USERS = {
     "visual": "visual_user",
 }
 
-DEFAULT_TIMEOUT = 10
+DEFAULT_TIMEOUT = 20
