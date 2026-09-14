@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 from pages.base_page import BasePage
 from pages.inventory_page import _slugify
@@ -15,12 +16,18 @@ class CartPage(BasePage):
     def remove_item_by_name(self, product_name):
         locator = (By.CSS_SELECTOR, f"[data-test='remove-{_slugify(product_name)}']")
         self.click(locator)
+        # The row (including this button) unmounts once React commits the
+        # state update -- wait for that instead of reading the list
+        # immediately, which can otherwise race the re-render.
+        self.wait.until(EC.invisibility_of_element_located(locator))
         return self
 
     def click_checkout(self):
         self.click(self.CHECKOUT_BUTTON)
+        self.wait_for_url_contains("checkout-step-one.html")
         return self
 
     def click_continue_shopping(self):
         self.click(self.CONTINUE_SHOPPING_BUTTON)
+        self.wait_for_url_contains("inventory.html")
         return self

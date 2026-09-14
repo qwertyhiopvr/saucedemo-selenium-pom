@@ -42,6 +42,7 @@ class InventoryPage(BasePage):
 
     def go_to_cart(self):
         self.click(self.CART_LINK)
+        self.wait_for_url_contains("cart.html")
         return self
 
     def sort_by(self, option_value):

@@ -26,12 +26,18 @@ class BasePage:
         return self.driver.find_elements(*locator)
 
     def click(self, locator):
-        """Retries on StaleElementReferenceException: the element can be
-        located and judged clickable, then get swapped out by a React
-        re-render a moment before .click() actually runs."""
+        """Waits for clickability, then clicks via JS rather than native
+        mouse-coordinate hit-testing. Native .click() proved unreliable in
+        headless CI against this React app -- element_to_be_clickable would
+        pass, .click() wouldn't raise, yet the app's onClick handler
+        sometimes never fired (no navigation, no state change). Dispatching
+        the click via the DOM sidesteps coordinate/viewport hit-testing
+        entirely. Retries on staleness for the same reason as before: the
+        element can go stale between being located and being clicked."""
         for attempt in range(STALE_RETRY_ATTEMPTS):
             try:
-                self.wait.until(EC.element_to_be_clickable(locator)).click()
+                element = self.wait.until(EC.element_to_be_clickable(locator))
+                self.driver.execute_script("arguments[0].click();", element)
                 return
             except StaleElementReferenceException:
                 if attempt == STALE_RETRY_ATTEMPTS - 1:
